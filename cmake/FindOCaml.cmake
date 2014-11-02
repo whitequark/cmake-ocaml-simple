@@ -20,7 +20,7 @@
 #
 # In any case, the following variables are defined:
 #
-# OCAML_${pkg}_FOUND
+# HAVE_OCAML_${pkg}
 #
 # If successful, the following variables will be defined:
 #
@@ -90,7 +90,7 @@ function(find_ocamlfind_package pkg)
 
     string(TOUPPER ${pkg} pkg)
 
-    set(OCAML_${pkg}_FOUND ${found}
+    set(HAVE_OCAML_${pkg} ${found}
         PARENT_SCOPE)
 
     set(OCAML_${pkg}_VERSION ${version}
