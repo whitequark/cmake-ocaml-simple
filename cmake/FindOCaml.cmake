@@ -10,6 +10,7 @@
 # OCAMLFIND
 # OCAML_VERSION
 # OCAML_STDLIB_PATH
+# HAVE_OCAMLOPT
 #
 # Also provides find_ocamlfind_package() macro.
 #
@@ -35,10 +36,21 @@ if( OCAMLFIND )
         COMMAND ${OCAMLFIND} ocamlc -version
         OUTPUT_VARIABLE OCAML_VERSION
         OUTPUT_STRIP_TRAILING_WHITESPACE)
+
     execute_process(
         COMMAND ${OCAMLFIND} ocamlc -where
         OUTPUT_VARIABLE OCAML_STDLIB_PATH
         OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+    execute_process(
+        COMMAND ${OCAMLFIND} ocamlc -version
+        OUTPUT_QUIET
+        RESULT_VARIABLE find_ocaml_result)
+    if( find_ocaml_result EQUAL 0 )
+        set(HAVE_OCAMLOPT TRUE)
+    else()
+        set(HAVE_OCAMLOPT FALSE)
+    endif()
 endif()
 
 find_package_handle_standard_args( OCaml DEFAULT_MSG
@@ -49,36 +61,38 @@ find_package_handle_standard_args( OCaml DEFAULT_MSG
 mark_as_advanced(
     OCAMLFIND)
 
-macro(find_ocamlfind_package)
-    CMAKE_PARSE_ARGUMENTS(find_ocamlfind_package "OPTIONAL" "PKG;VERSION" "" ${ARGN})
+function(find_ocamlfind_package pkg)
+    CMAKE_PARSE_ARGUMENTS(ARG "OPTIONAL" "VERSION" "" ${ARGN})
 
     execute_process(
-        COMMAND "${OCAMLFIND}" "query" "${find_ocamlfind_package_PKG}" "-format" "%v"
-        RESULT_VARIABLE find_ocamlfind_package_result
-        OUTPUT_VARIABLE find_ocamlfind_package_version
-        ERROR_VARIABLE find_ocamlfind_package_error
+        COMMAND "${OCAMLFIND}" "query" "${pkg}" "-format" "%v"
+        RESULT_VARIABLE result
+        OUTPUT_VARIABLE version
+        ERROR_VARIABLE error
         OUTPUT_STRIP_TRAILING_WHITESPACE
         ERROR_STRIP_TRAILING_WHITESPACE)
 
-    if( NOT ${find_ocamlfind_package_result} EQUAL 0 AND
-        NOT ${find_ocamlfind_package_OPTIONAL} )
-        message(FATAL_ERROR ${find_ocamlfind_package_error})
+    if( NOT ${result} EQUAL 0 AND NOT ${ARG_OPTIONAL} )
+        message(FATAL_ERROR ${error})
     endif()
 
-    if( ${find_ocamlfind_package_result} EQUAL 0 )
-        set(find_ocamlfind_package_found TRUE)
+    if( ${result} EQUAL 0 )
+        set(found TRUE)
     else()
-        set(find_ocamlfind_package_found FALSE)
+        set(found FALSE)
     endif()
 
-    if( ${find_ocamlfind_package_found} AND ${find_ocamlfind_package_VERSION} )
-        if( ${find_ocamlfind_package_version} VERSION_LESS ${find_ocamlfind_package_VERSION} )
-            message(FATAL_ERROR "ocamlfind package ${find_ocamlfind_package_PKG} should have version ${find_ocamlfind_package_VERSION} or newer")
+    if( ${found} AND ${ARG_VERSION} )
+        if( ${version} VERSION_LESS ${ARG_VERSION} )
+            message(FATAL_ERROR "ocamlfind package ${pkg} should have version ${ARG_VERSION} or newer")
         endif()
     endif()
 
-    set(OCAML_${find_ocamlfind_package_PKG}_FOUND ${find_ocamlfind_package_found})
+    string(TOUPPER ${pkg} pkg)
 
-    set(OCAML_${find_ocamlfind_package_PKG}_VERSION ${find_ocamlfind_package_version})
+    set(OCAML_${pkg}_FOUND ${found}
+        PARENT_SCOPE)
 
-endmacro()
+    set(OCAML_${pkg}_VERSION ${version}
+        PARENT_SCOPE)
+endfunction()

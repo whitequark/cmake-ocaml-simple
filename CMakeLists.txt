@@ -7,11 +7,15 @@ set(CMAKE_MODULE_PATH
   "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 include(FindOCaml)
+include(AddOCaml)
+
 find_package(OCaml REQUIRED)
 
 if( OCAML_VERSION VERSION_LESS "4.00.0" )
   message(FATAL_ERROR "OCaml >=4.00.0 is required")
 endif()
 
-find_ocamlfind_package(PKG ctypes VERSION 0.3)
-find_ocamlfind_package(PKG oUnit VERSION 2 OPTIONAL)
+find_ocamlfind_package(ctypes VERSION 0.3)
+find_ocamlfind_package(oUnit VERSION 2 OPTIONAL)
+
+add_subdirectory(src)
