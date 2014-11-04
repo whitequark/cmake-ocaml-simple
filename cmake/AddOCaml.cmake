@@ -4,7 +4,20 @@
 #
 # Example usage:
 #
-# add_ocaml_library(pkg_a OCAML mod_a OCAMLDEP mod_b C mod_a_stubs PKG ctypes)
+# add_ocaml_library(pkg_a OCAML mod_a OCAMLDEP pkg_b C mod_a_stubs PKG ctypes LLVM core)
+#
+# Unnamed parameters:
+#
+#   * Library name.
+#
+# Named parameters:
+#
+# OCAML     OCaml module names. Imply presence of a corresponding .ml and .mli files.
+# OCAMLDEP  Names of libraries this library depends on.
+# C         C stub sources. Imply presence of a corresponding .c file.
+# CFLAGS    Additional arguments passed when compiling C stubs.
+# PKG       Names of ocamlfind packages this library depends on.
+#
 
 function(add_ocaml_library name)
     CMAKE_PARSE_ARGUMENTS(ARG "" "" "OCAML;OCAMLDEP;C;CFLAGS;PKG" ${ARGN})
